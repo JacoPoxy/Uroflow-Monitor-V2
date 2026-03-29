@@ -47,7 +47,12 @@ app.get('/fluid-intake', async (req, res) => {
 });
 
 app.post('/fluid-intake', async (req, res) => {
-  const row = await db.insert(fluid_intake).values(req.body).returning();
+  const b = req.body;
+  const row = await db.insert(fluid_intake).values({
+    recorded_at: new Date(b.recorded_at),
+    volume_ml: b.volume_ml ?? null,
+    drink_types: b.drink_types ?? null,
+  }).returning();
   res.json(row[0]);
 });
 
