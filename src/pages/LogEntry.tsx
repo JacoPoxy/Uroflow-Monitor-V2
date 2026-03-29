@@ -18,16 +18,17 @@ const DRINK_TYPES = [
 
 const API = 'http://localhost:3001'
 
+const localNow = () => {
+  const n = new Date()
+  const pad = (x: number) => String(x).padStart(2, '0')
+  return `${n.getFullYear()}-${pad(n.getMonth() + 1)}-${pad(n.getDate())}T${pad(n.getHours())}:${pad(n.getMinutes())}`
+}
+
 export default function LogEntry() {
   const [tab, setTab] = useState<'voiding' | 'fluid'>('voiding')
 
   // Voiding state
-  const [voidedAt, setVoidedAt] = useState(() => {
-    const now = new Date()
-    //  return now.toISOString().slice(0, 16)
-    const pad = (n: number) => String(n).padStart(2, '0')
-    return `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}T${pad(now.getHours())}:${pad(now.getMinutes())}`
-  })
+  const [voidedAt, setVoidedAt] = useState(localNow)
   const [isNocturia, setIsNocturia] = useState(false)
   const [urgency, setUrgency] = useState('None')
   const [volumeHundreds, setVolumeHundreds] = useState(0)
@@ -43,18 +44,37 @@ export default function LogEntry() {
   const [notes, setNotes] = useState('')
 
   // Fluid state
-  const [recordedAt, setRecordedAt] = useState(() => {
-    const now = new Date()
-    //return now.toISOString().slice(0, 16)
-    const pad = (n: number) => String(n).padStart(2, '0')
-    return `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}T${pad(now.getHours())}:${pad(now.getMinutes())}`
-  })
+  const [recordedAt, setRecordedAt] = useState(localNow)
   const [fluidHundreds, setFluidHundreds] = useState(0)
   const [fluidFine, setFluidFine] = useState(0)
   const [drinkTypes, setDrinkTypes] = useState<string[]>(['Neutral'])
 
   const toggleArr = (arr: string[], val: string, set: (a: string[]) => void) =>
     set(arr.includes(val) ? arr.filter(x => x !== val) : [...arr, val])
+
+  const resetVoiding = () => {
+    setVoidedAt(localNow())
+    setIsNocturia(false)
+    setUrgency('None')
+    setVolumeHundreds(0)
+    setVolumeFine(0)
+    setQmax('')
+    setDuration('')
+    setUrineColor('')
+    setCloudy(false)
+    setAppearanceTags([])
+    setHematuria('None')
+    setPainLocations([])
+    setStream('Normal')
+    setNotes('')
+  }
+
+  const resetFluid = () => {
+    setRecordedAt(localNow())
+    setFluidHundreds(0)
+    setFluidFine(0)
+    setDrinkTypes(['Neutral'])
+  }
 
   const submitVoiding = async () => {
     await axios.post(`${API}/voidings`, {
@@ -73,22 +93,7 @@ export default function LogEntry() {
       stream,
       notes,
     })
-    const pad2 = (n: number) => String(n).padStart(2, '0')
-    const n = new Date()
-    setVoidedAt(`${n.getFullYear()}-${pad2(n.getMonth() + 1)}-${pad2(n.getDate())}T${pad2(n.getHours())}:${pad2(n.getMinutes())}`)
-    setIsNocturia(false)
-    setUrgency('None')
-    setVolumeHundreds(0)
-    setVolumeFine(0)
-    setQmax('')
-    setDuration('')
-    setUrineColor('')
-    setCloudy(false)
-    setAppearanceTags([])
-    setHematuria('None')
-    setPainLocations([])
-    setStream('Normal')
-    setNotes('')
+    resetVoiding()
     alert('Voiding logged!')
   }
 
@@ -98,6 +103,7 @@ export default function LogEntry() {
       volume_ml: fluidHundreds + fluidFine,
       drink_types: JSON.stringify(drinkTypes),
     })
+    resetFluid()
     alert('Fluid intake logged!')
   }
 
@@ -109,7 +115,6 @@ export default function LogEntry() {
         <h1>New Entry</h1>
         <p className="log-subtitle">Log a voiding event or fluid intake.</p>
       </div>
-
       <div className="log-tabs">
         <button className={!isFluid ? 'active' : ''} onClick={() => setTab('voiding')}>
           💧 Voiding
@@ -127,12 +132,10 @@ export default function LogEntry() {
               <span>Core Metrics</span>
             </div>
             <div className="divider" />
-
             <div className="field">
               <label>Date & Time <span className="req">*</span></label>
               <input type="datetime-local" value={voidedAt} onChange={e => setVoidedAt(e.target.value)} />
             </div>
-
             <div className="field">
               <div className="field-row-between">
                 <label>Volume (ml) <span className="req">*</span></label>
@@ -151,7 +154,6 @@ export default function LogEntry() {
                 ))}
               </div>
             </div>
-
             <div className="field row-2">
               <div>
                 <label>Qmax (ml/s) — Optional</label>
@@ -168,7 +170,6 @@ export default function LogEntry() {
                 </div>
               </div>
             </div>
-
             <div className="field">
               <label>Nocturia</label>
               <div className="toggle-pill">
@@ -181,7 +182,6 @@ export default function LogEntry() {
           <div className="card">
             <div className="card-header"><span>Visual Assessment</span></div>
             <div className="divider" />
-
             <div className="field">
               <label>Urine Color</label>
               <div className="color-swatches">
@@ -193,7 +193,6 @@ export default function LogEntry() {
                 ))}
               </div>
             </div>
-
             <div className="field">
               <label>Appearance</label>
               <div className="appearance-row">
@@ -208,7 +207,6 @@ export default function LogEntry() {
                 </div>
               </div>
             </div>
-
             <div className="field">
               <label>Blood / Hematuria</label>
               <div className="pills">
@@ -223,7 +221,6 @@ export default function LogEntry() {
           <div className="card">
             <div className="card-header"><span>Symptoms</span></div>
             <div className="divider" />
-
             <div className="field">
               <label>Urgency</label>
               <div className="pills">
@@ -232,7 +229,6 @@ export default function LogEntry() {
                 ))}
               </div>
             </div>
-
             <div className="field">
               <label>Pain Location (select all that apply)</label>
               <div className="pills">
@@ -241,7 +237,6 @@ export default function LogEntry() {
                 ))}
               </div>
             </div>
-
             <div className="field">
               <label>Stream Quality</label>
               <select value={stream} onChange={e => setStream(e.target.value)}>
@@ -267,12 +262,10 @@ export default function LogEntry() {
               <span>Fluid Intake</span>
             </div>
             <div className="divider" />
-
             <div className="field">
               <label>Date & Time <span className="req">*</span></label>
               <input type="datetime-local" value={recordedAt} onChange={e => setRecordedAt(e.target.value)} />
             </div>
-
             <div className="field">
               <div className="field-row-between">
                 <label>Volume (ml) <span className="req">*</span></label>
@@ -298,7 +291,9 @@ export default function LogEntry() {
             <div className="divider" />
             <div className="drink-grid">
               {DRINK_TYPES.map(d => (
-                <button key={d.label} className={`drink-btn ${drinkTypes.includes(d.label) ? 'active' : ''}`}
+                <button
+                  key={d.label}
+                  className={`drink-btn ${drinkTypes.includes(d.label) ? 'active' : ''}`}
                   onClick={() => {
                     if (d.label === 'Neutral') {
                       setDrinkTypes(['Neutral'])
@@ -309,7 +304,8 @@ export default function LogEntry() {
                         : [...current, d.label]
                       setDrinkTypes(updated.length === 0 ? ['Neutral'] : updated)
                     }
-                  }}>
+                  }}
+                >
                   <span className="drink-icon">{d.icon}</span>
                   <span>{d.label}</span>
                 </button>
