@@ -105,6 +105,7 @@ export default function History() {
                 <div key={`v-${v.id}`} className="history-entry" onClick={() => setSelected(entry)}>
                   <div className="he-row1">
                     <span className="he-time">{time}</span>
+                    <span className="he-badge voiding">Voiding</span>
                     {v.is_nocturia && <span className="he-badge nocturia">Nocturia</span>}
                     {urgencyAlert && <span className="he-badge urgent">{v.urgency}</span>}
                     <span className="he-chevron">›</span>
