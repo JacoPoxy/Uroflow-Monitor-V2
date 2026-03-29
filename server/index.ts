@@ -3,7 +3,7 @@ import cors from 'cors';
 import 'dotenv/config';
 import { db } from './db/index';
 import { voidings, fluid_intake } from './db/schema';
-import { desc } from 'drizzle-orm';
+import { desc, eq } from 'drizzle-orm';
 
 const app = express();
 app.use(cors());
@@ -16,7 +16,22 @@ app.get('/voidings', async (req, res) => {
 });
 
 app.post('/voidings', async (req, res) => {
-  const row = await db.insert(voidings).values(req.body).returning();
+  const b = req.body;
+  const row = await db.insert(voidings).values({
+    voided_at: new Date(b.voided_at),
+    volume_ml: b.volume_ml ?? null,
+    qmax: b.qmax ?? null,
+    duration_seconds: b.duration_seconds ?? null,
+    urine_color: b.urine_color ?? null,
+    cloudy: b.cloudy ?? null,
+    appearance_tags: b.appearance_tags ?? null,
+    hematuria: b.hematuria ?? null,
+    urgency: b.urgency ?? null,
+    pain_locations: b.pain_locations ?? null,
+    pain_types: b.pain_types ?? null,
+    is_nocturia: b.is_nocturia ?? false,
+    notes: b.notes ?? null,
+  }).returning();
   res.json(row[0]);
 });
 
