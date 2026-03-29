@@ -24,7 +24,9 @@ export default function LogEntry() {
   // Voiding state
   const [voidedAt, setVoidedAt] = useState(() => {
     const now = new Date()
-    return now.toISOString().slice(0, 16)
+    //  return now.toISOString().slice(0, 16)
+    const pad = (n: number) => String(n).padStart(2, '0')
+    return `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}T${pad(now.getHours())}:${pad(now.getMinutes())}`
   })
   const [isNocturia, setIsNocturia] = useState(false)
   const [urgency, setUrgency] = useState('None')
@@ -43,7 +45,9 @@ export default function LogEntry() {
   // Fluid state
   const [recordedAt, setRecordedAt] = useState(() => {
     const now = new Date()
-    return now.toISOString().slice(0, 16)
+    //return now.toISOString().slice(0, 16)
+    const pad = (n: number) => String(n).padStart(2, '0')
+    return `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}T${pad(now.getHours())}:${pad(now.getMinutes())}`
   })
   const [fluidHundreds, setFluidHundreds] = useState(0)
   const [fluidFine, setFluidFine] = useState(0)
@@ -69,6 +73,22 @@ export default function LogEntry() {
       stream,
       notes,
     })
+    const pad2 = (n: number) => String(n).padStart(2, '0')
+    const n = new Date()
+    setVoidedAt(`${n.getFullYear()}-${pad2(n.getMonth() + 1)}-${pad2(n.getDate())}T${pad2(n.getHours())}:${pad2(n.getMinutes())}`)
+    setIsNocturia(false)
+    setUrgency('None')
+    setVolumeHundreds(0)
+    setVolumeFine(0)
+    setQmax('')
+    setDuration('')
+    setUrineColor('')
+    setCloudy(false)
+    setAppearanceTags([])
+    setHematuria('None')
+    setPainLocations([])
+    setStream('Normal')
+    setNotes('')
     alert('Voiding logged!')
   }
 
@@ -120,13 +140,13 @@ export default function LogEntry() {
               </div>
               <div className="step-label">STEP 1 — HUNDREDS</div>
               <div className="vol-grid">
-                {[100,200,300,400].map(v => (
+                {[100, 200, 300, 400].map(v => (
                   <button key={v} className={`vol-btn ${volumeHundreds === v ? 'active' : ''}`} onClick={() => setVolumeHundreds(v)}>{v}</button>
                 ))}
               </div>
               <div className="step-label">STEP 2 — FINE TUNE (OPTIONAL)</div>
               <div className="vol-grid three">
-                {[25,50,75].map(v => (
+                {[25, 50, 75].map(v => (
                   <button key={v} className={`vol-btn ${volumeFine === v ? 'active' : ''}`} onClick={() => setVolumeFine(prev => prev === v ? 0 : v)}>+{v}</button>
                 ))}
               </div>
@@ -167,7 +187,7 @@ export default function LogEntry() {
               <div className="color-swatches">
                 {COLORS.map((c, i) => (
                   <div key={c} className="swatch-wrap" onClick={() => setUrineColor(c)}>
-                    <div className={`color-swatch ${urineColor === c ? 'active' : ''}`} style={{background: COLOR_HEX[i]}} />
+                    <div className={`color-swatch ${urineColor === c ? 'active' : ''}`} style={{ background: COLOR_HEX[i] }} />
                     <span className={urineColor === c ? 'swatch-label active' : 'swatch-label'}>{c}</span>
                   </div>
                 ))}
@@ -260,13 +280,13 @@ export default function LogEntry() {
               </div>
               <div className="step-label">STEP 1 — HUNDREDS</div>
               <div className="vol-grid">
-                {[100,200,300,400].map(v => (
+                {[100, 200, 300, 400].map(v => (
                   <button key={v} className={`vol-btn ${fluidHundreds === v ? 'active' : ''}`} onClick={() => setFluidHundreds(v)}>{v}</button>
                 ))}
               </div>
               <div className="step-label">STEP 2 — FINE TUNE (OPTIONAL)</div>
               <div className="vol-grid three">
-                {[25,50,75].map(v => (
+                {[25, 50, 75].map(v => (
                   <button key={v} className={`vol-btn ${fluidFine === v ? 'active' : ''}`} onClick={() => setFluidFine(prev => prev === v ? 0 : v)}>+{v}</button>
                 ))}
               </div>
@@ -279,7 +299,17 @@ export default function LogEntry() {
             <div className="drink-grid">
               {DRINK_TYPES.map(d => (
                 <button key={d.label} className={`drink-btn ${drinkTypes.includes(d.label) ? 'active' : ''}`}
-                  onClick={() => toggleArr(drinkTypes, d.label, setDrinkTypes)}>
+                  onClick={() => {
+                    if (d.label === 'Neutral') {
+                      setDrinkTypes(['Neutral'])
+                    } else {
+                      const current = drinkTypes.filter((x: string) => x !== 'Neutral')
+                      const updated = current.includes(d.label)
+                        ? current.filter((x: string) => x !== d.label)
+                        : [...current, d.label]
+                      setDrinkTypes(updated.length === 0 ? ['Neutral'] : updated)
+                    }
+                  }}>
                   <span className="drink-icon">{d.icon}</span>
                   <span>{d.label}</span>
                 </button>
